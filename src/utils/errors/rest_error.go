@@ -4,21 +4,35 @@ import "net/http"
 
 type RestErr struct {
 	Message string `json:"message"`
-	Code int `json:"code"`
-	Error string `json:"error"`
+	Status  int    `json:"status"`
+	Error   string `json:"error"`
 }
 
-func BadRequestError(message string) *RestErr{
+func BadRequestError(message string) *RestErr {
 	return &RestErr{
 		Message: message,
-		Code:    http.StatusBadRequest,
-		Error:   "Bad Request",
+		Status:  http.StatusBadRequest,
+		Error:   "bad_request",
 	}
 }
-func CreateUserError(message string) *RestErr{
+func CreateUserError(message string) *RestErr {
 	return &RestErr{
 		Message: message,
-		Code:    http.StatusInternalServerError,
-		Error:   "Can't create user",
+		Status:  http.StatusInternalServerError,
+		Error:   "user_not_created",
+	}
+}
+func UserNotFound(message string) *RestErr {
+	return &RestErr{
+		Message: message,
+		Status:  http.StatusNotFound,
+		Error:   "not_found",
+	}
+}
+func NewUserBadRequest(message string) *RestErr {
+	return &RestErr{
+		Message: message,
+		Status:  http.StatusBadRequest,
+		Error:   "user_already_exists",
 	}
 }
