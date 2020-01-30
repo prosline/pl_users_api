@@ -8,6 +8,13 @@ type RestErr struct {
 	Error   string `json:"error"`
 }
 
+func NewBadRequestError(message string) *RestErr {
+	return &RestErr{
+		Message: message,
+		Status:  http.StatusBadRequest,
+		Error:   "invalid_json_body",
+	}
+}
 func BadRequestError(message string) *RestErr {
 	return &RestErr{
 		Message: message,
@@ -34,5 +41,12 @@ func NewUserBadRequest(message string) *RestErr {
 		Message: message,
 		Status:  http.StatusBadRequest,
 		Error:   "user_already_exists",
+	}
+}
+func UserEmailError(message string) *RestErr {
+	return &RestErr{
+		Message: message,
+		Status:  http.StatusBadRequest,
+		Error:   "bad_request",
 	}
 }
