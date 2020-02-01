@@ -1,31 +1,30 @@
 package controllers
 
 import (
-	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"github.com/prosline/pl_users_api/src/domain/users"
 	"github.com/prosline/pl_users_api/src/services"
 	"github.com/prosline/pl_users_api/src/utils/errors"
-	"io/ioutil"
 	"net/http"
 	"strconv"
 )
 
 const (
-	BAD_REQUEST       = "Invalid JSON body, please review user info!"
-	BAD_EMAIL_REQUEST = "Invalid Email Address"
-	USER_NOT_CREATED  = "Problem occurred while creating a User record!"
+	UserNotCreated  = "Problem occurred while creating User record!"
+	InvalidUserId   = "Invalid User Id"
+	InvalidJSONBody = "Invalid Json Body"
+	UserNotUpdated  = "Unable to update user"
 )
 
 func GetUser(c *gin.Context) {
 	userId, userErr := strconv.ParseInt(c.Param("user_id"), 10, 64)
 	if userErr != nil {
-		err := errors.NewBadRequestError("invalid user Id!")
+		err := errors.NewBadRequestError(InvalidUserId)
 		c.JSON(err.Status, err)
 	}
 	user, getUserErr := services.GetUser(userId)
 	if getUserErr != nil {
-		err := errors.CreateUserError(USER_NOT_CREATED)
+		err := errors.CreateUserError(UserNotCreated)
 		c.JSON(err.Status, getUserErr)
 		return
 	}
@@ -38,26 +37,41 @@ func FindUser(c *gin.Context) {
 
 func CreateUser(c *gin.Context) {
 	var user users.User
-	data, err := ioutil.ReadAll(c.Request.Body)
-	if err != nil {
-		restErr := errors.NewBadRequestError("invalid json body")
+	if err := c.ShouldBindJSON(&user); err != nil {
+		restErr := errors.NewBadRequestError(InvalidJSONBody)
 		c.JSON(restErr.Status, restErr)
 		return
 	}
-	if er := json.Unmarshal(data, &user); er != nil {
-		restErr := errors.NewBadRequestError("invalid json body")
-		c.JSON(restErr.Status, restErr)
-		return
-	}
-	//	if err := c.ShouldBindJSON(&user); err != nil {
-	//		restErr := errors.NewBadRequestError("invalid json body")
-	//		c.JSON(restErr.Status, restErr)
-	//		return
-	//	}
 	result, errUser := services.CreateUser(user)
 	if errUser != nil {
 		c.JSON(http.StatusBadRequest, errUser)
 		return
 	}
 	c.JSON(http.StatusCreated, result)
+}
+
+func UpdateUser(c *gin.Context) {
+
+	userId, userErr := strconv.ParseInt(c.Param("user_id"), 10, 64)
+	if userErr != nil {
+		err := errors.NewBadRequestError(InvalidUserId)
+		c.JSON(err.Status, err)
+	}
+	var user users.User
+	if err := c.ShouldBindJSON(&user); err != nil {
+		er := errors.NewBadRequestError(InvalidJSONBody)
+		c.JSON(er.Status, er)
+	}
+	user.Id = userId
+	isPartial := c.Request.Method == http.MethodPatch
+	if isPartial {
+
+	}
+	u, updateErr := services.UpdateUser(user)
+	if updateErr != nil {
+		er := errors.NewBadRequestError(UserNotUpdated)
+		c.JSON(er.Status, er)
+	}
+	c.JSON(http.StatusOK, u)
+
 }
