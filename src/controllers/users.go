@@ -14,13 +14,22 @@ const (
 	InvalidUserId   = "Invalid User Id"
 	InvalidJSONBody = "Invalid Json Body"
 	UserNotUpdated  = "Unable to update user"
+	UserNotDeleted  = "Unable to delete user"
 )
 
-func GetUser(c *gin.Context) {
-	userId, userErr := strconv.ParseInt(c.Param("user_id"), 10, 64)
+func getUserId(param string) (int64, *errors.RestErr) {
+	userId, userErr := strconv.ParseInt(param, 10, 64)
 	if userErr != nil {
-		err := errors.NewBadRequestError(InvalidUserId)
+		return 0, errors.NewBadRequestError(InvalidUserId)
+	}
+	return userId, nil
+}
+
+func Get(c *gin.Context) {
+	userId, err := getUserId(c.Param("user_id"))
+	if err != nil {
 		c.JSON(err.Status, err)
+		return
 	}
 	user, getUserErr := services.GetUser(userId)
 	if getUserErr != nil {
@@ -35,7 +44,7 @@ func FindUser(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "Implementation required!")
 }
 
-func CreateUser(c *gin.Context) {
+func Create(c *gin.Context) {
 	var user users.User
 	if err := c.ShouldBindJSON(&user); err != nil {
 		restErr := errors.NewBadRequestError(InvalidJSONBody)
@@ -50,12 +59,11 @@ func CreateUser(c *gin.Context) {
 	c.JSON(http.StatusCreated, result)
 }
 
-func UpdateUser(c *gin.Context) {
-
-	userId, userErr := strconv.ParseInt(c.Param("user_id"), 10, 64)
-	if userErr != nil {
-		err := errors.NewBadRequestError(InvalidUserId)
+func Update(c *gin.Context) {
+	userId, err := getUserId(c.Param("user_id"))
+	if err != nil {
 		c.JSON(err.Status, err)
+		return
 	}
 	var user users.User
 	if err := c.ShouldBindJSON(&user); err != nil {
@@ -64,14 +72,24 @@ func UpdateUser(c *gin.Context) {
 	}
 	user.Id = userId
 	isPartial := c.Request.Method == http.MethodPatch
-	if isPartial {
-
-	}
-	u, updateErr := services.UpdateUser(user)
+	u, updateErr := services.UpdateUser(isPartial, user)
 	if updateErr != nil {
 		er := errors.NewBadRequestError(UserNotUpdated)
 		c.JSON(er.Status, er)
 	}
 	c.JSON(http.StatusOK, u)
+}
 
+func Delete(c *gin.Context) {
+	userId, err := getUserId(c.Param("user_id"))
+	if err != nil {
+		c.JSON(err.Status, err)
+		return
+	}
+	delErr := services.DeleteUser(userId)
+	if delErr != nil {
+		delErr := errors.NewBadRequestError(UserNotDeleted)
+		c.JSON(delErr.Status, delErr)
+	}
+	c.JSON(http.StatusOK, map[string]string{"status": "deleted"})
 }

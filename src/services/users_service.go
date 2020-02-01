@@ -26,18 +26,35 @@ func CreateUser(user users.User) (*users.User, *errors.RestErr) {
 	return &user, nil
 }
 
-func UpdateUser(user users.User) (*users.User, *errors.RestErr) {
+func UpdateUser(isPartial bool, user users.User) (*users.User, *errors.RestErr) {
 	u, err := GetUser(user.Id)
 	if err != nil {
 		return nil, errors.UserNotFound("User Not Found!")
 	}
+	if isPartial { // Handles the PATCH verb
+		if user.FirstName != "" {
+			u.FirstName = user.FirstName
+		}
+		if user.LastName != "" {
+			u.LastName = user.LastName
+		}
+		if user.Email != "" {
+			u.Email = user.Email
+		}
+	} else { // Handles the PUP verb
+		u.Id = user.Id
+		u.FirstName = user.FirstName
+		u.LastName = user.LastName
+		u.Email = user.Email
+	}
 
-	u.Id = user.Id
-	u.FirstName = user.FirstName
-	u.LastName = user.LastName
-	u.Email = user.Email
 	if er := u.Update(); er != nil {
 		return nil, errors.NewInternalServerError("User update failed.")
 	}
 	return u, nil
+}
+func DeleteUser(id int64) *errors.RestErr {
+	var user users.User
+	user.Id = id
+	return user.Delete()
 }

@@ -17,8 +17,9 @@ const (
 var (
 	userDB          = make(map[int64]*User)
 	queryInsertUser = "INSERT INTO users(first_name,last_name,email,date_created) VALUES($1,$2,$3,$4) RETURNING id,date_created;"
-	querySelectUser = "SELECT * FROM users where id = $1"
-	queryUpdateUser = "UPDATE users SET first_name=$1, last_name=$2 , email=$3 WHERE Id=$4"
+	querySelectUser = "SELECT id,first_name,last_name,email,date_created FROM users where id = $1;"
+	queryUpdateUser = "UPDATE users SET first_name=$1, last_name=$2 , email=$3 WHERE Id=$4;"
+	queryDeleteUser = "DELETE FROM users WHERE Id=$1;"
 )
 
 func (user *User) Save() *errors.RestErr {
@@ -51,6 +52,25 @@ func (user *User) Save() *errors.RestErr {
 	return nil
 }
 
+//func (user *User) Get() *errors.RestErr {
+//	if dberr := pg.ClientDB.Ping(); dberr != nil {
+//		panic(dberr)
+//	}
+//	stmt, err := pg.ClientDB.Prepare(querySelectUser)
+//	if err != nil {
+//		fmt.Println("error when trying to prepare get user statement", err)
+//		return errors.NewInternalServerError(err.Error())
+//	}
+//	defer stmt.Close()
+//
+//	result := stmt.QueryRow(user.Id)
+//
+//	if getErr := result.Scan(&user.Id, &user.FirstName, &user.LastName, &user.Email, &user.DateCreated); getErr != nil {
+//		fmt.Println("error when trying to get user by id", getErr)
+//		return errors.NewInternalServerError(getErr.Error())
+//	}
+//	return nil
+//}
 func (user *User) Get() *errors.RestErr {
 	if dberr := pg.ClientDB.Ping(); dberr != nil {
 		panic(dberr)
@@ -79,7 +99,23 @@ func (user *User) Update() *errors.RestErr {
 	if er != nil {
 		return errors.NewInternalServerError(er.Error())
 	}
-	_, err := stmt.Exec(&user.FirstName, &user.LastName, &user.Email, user.Id)
+	_, err := stmt.Exec(user.FirstName, user.LastName, user.Email, user.Id)
+	if err != nil {
+		return errors.NewInternalServerError(er.Error())
+	}
+	return nil
+}
+
+func (user *User) Delete() *errors.RestErr {
+	if dberr := pg.ClientDB.Ping(); dberr != nil {
+		panic(dberr)
+	}
+	stmt, er := pg.ClientDB.Prepare(queryDeleteUser)
+	defer stmt.Close()
+	if er != nil {
+		return errors.NewInternalServerError(er.Error())
+	}
+	_, err := stmt.Exec(user.Id)
 	if err != nil {
 		return errors.NewInternalServerError(er.Error())
 	}

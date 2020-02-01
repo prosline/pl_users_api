@@ -7,9 +7,10 @@ import (
 func URLMapping() {
 	router.GET("/ping", controllers.Ping)
 
-	router.POST("/users", controllers.CreateUser)
-	router.GET("/users/:user_id", controllers.GetUser)
-	router.PUT("/users/:user_id", controllers.UpdateUser)
-	router.PATCH("/users/:user_id", controllers.UpdateUser)
+	router.POST("/users", controllers.Create)
+	router.GET("/users/:user_id", controllers.Get)
+	router.PUT("/users/:user_id", controllers.Update)
+	router.PATCH("/users/:user_id", controllers.Update)
+	router.DELETE("/users/:user_id", controllers.Delete)
 
 }
