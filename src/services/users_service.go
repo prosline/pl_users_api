@@ -58,3 +58,7 @@ func DeleteUser(id int64) *errors.RestErr {
 	user.Id = id
 	return user.Delete()
 }
+func SearchUsers(param string) ([]users.User, *errors.RestErr) {
+	u := &users.User{}
+	return u.FindUsersByStatus(param)
+}

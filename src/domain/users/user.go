@@ -11,6 +11,8 @@ type User struct {
 	LastName    string `json:"last_name" db:"last_name"`
 	Email       string `json:"email" db:"email"`
 	DateCreated string `json:"date_created" db:"date_created"`
+	Status      string `json:"status" db:"status"`
+	Password    string `json:"password" db:"password"`
 }
 
 func (user *User) IsValid() *errors.RestErr {
@@ -26,6 +28,12 @@ func (user *User) IsValid() *errors.RestErr {
 	}
 	if user.LastName == "" {
 		return errors.NewBadRequestError("invalid user last name")
+	}
+	if user.Status == "" {
+		return errors.NewBadRequestError("invalid Status")
+	}
+	if user.Password == "" {
+		return errors.NewBadRequestError("invalid password")
 	}
 
 	return nil

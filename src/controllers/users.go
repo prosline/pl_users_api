@@ -10,11 +10,12 @@ import (
 )
 
 const (
-	UserNotCreated  = "Problem occurred while creating User record!"
-	InvalidUserId   = "Invalid User Id"
-	InvalidJSONBody = "Invalid Json Body"
-	UserNotUpdated  = "Unable to update user"
-	UserNotDeleted  = "Unable to delete user"
+	UserNotCreated   = "Problem occurred while creating User record!"
+	InvalidUserId    = "Invalid User Id"
+	InvalidJSONBody  = "Invalid Json Body"
+	UserNotUpdated   = "Unable to update user"
+	UserNotDeleted   = "Unable to delete user"
+	UserNotAvailable = "Users not available"
 )
 
 func getUserId(param string) (int64, *errors.RestErr) {
@@ -92,4 +93,21 @@ func Delete(c *gin.Context) {
 		c.JSON(delErr.Status, delErr)
 	}
 	c.JSON(http.StatusOK, map[string]string{"status": "deleted"})
+}
+
+// '2016-06-22 19:10:25-07'
+func Search(c *gin.Context) {
+	param := c.Query("status")
+
+	if param == "" {
+		paramErr := errors.NewBadRequestError(UserNotDeleted)
+		c.JSON(paramErr.Status, paramErr)
+	}
+	allUsers, srchErr := services.SearchUsers(param)
+	if srchErr != nil {
+		err := errors.UserNotFound(UserNotAvailable)
+		c.JSON(err.Status, err)
+	}
+	c.JSON(http.StatusOK, allUsers)
+
 }
