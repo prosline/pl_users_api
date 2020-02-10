@@ -1,22 +1,39 @@
 package services
 
 import (
+	"errors"
 	"github.com/prosline/pl_users_api/src/domain/users"
-	"github.com/prosline/pl_users_api/src/utils/errors"
+	"github.com/prosline/pl_util/utils/rest_errors"
 )
 
-func GetUser(id int64) (*users.User, *errors.RestErr) {
+var (
+	UserService userServiceInterface = &userService{}
+)
+
+type userService struct {
+}
+
+type userServiceInterface interface {
+	GetUser(int64) (*users.User, *rest_errors.RestErr)
+	CreateUser(user users.User) (*users.User, *rest_errors.RestErr)
+	UpdateUser(isPartial bool, user users.User) (*users.User, *rest_errors.RestErr)
+	DeleteUser(id int64) *rest_errors.RestErr
+	SearchUsers(string) (users.Users, *rest_errors.RestErr)
+	Login(users.UserLogin) (*users.User, *rest_errors.RestErr)
+}
+
+func (s *userService) GetUser(id int64) (*users.User, *rest_errors.RestErr) {
 	if id <= 0 {
-		return nil, errors.UserNotFound("Invalid User Id!")
+		return nil, rest_errors.UserNotFound("Invalid User Id!")
 	}
 	user := users.User{Id: id}
 	if err := user.Get(); err != nil {
-		return nil, errors.UserNotFound("User Not Found!")
+		return nil, rest_errors.UserNotFound("User Not Found!")
 	}
 
 	return &user, nil
 }
-func CreateUser(user users.User) (*users.User, *errors.RestErr) {
+func (s *userService) CreateUser(user users.User) (*users.User, *rest_errors.RestErr) {
 	if err := user.IsValid(); err != nil {
 		return nil, err
 	}
@@ -26,10 +43,10 @@ func CreateUser(user users.User) (*users.User, *errors.RestErr) {
 	return &user, nil
 }
 
-func UpdateUser(isPartial bool, user users.User) (*users.User, *errors.RestErr) {
-	u, err := GetUser(user.Id)
+func (s *userService) UpdateUser(isPartial bool, user users.User) (*users.User, *rest_errors.RestErr) {
+	u, err := s.GetUser(user.Id)
 	if err != nil {
-		return nil, errors.UserNotFound("User Not Found!")
+		return nil, rest_errors.UserNotFound("User Not Found!")
 	}
 	if isPartial { // Handles the PATCH verb
 		if user.FirstName != "" {
@@ -49,16 +66,28 @@ func UpdateUser(isPartial bool, user users.User) (*users.User, *errors.RestErr) 
 	}
 
 	if er := u.Update(); er != nil {
-		return nil, errors.NewInternalServerError("User update failed.")
+		return nil, rest_errors.NewInternalServerError("User update failed.",errors.New("Update Failed"))
 	}
 	return u, nil
 }
-func DeleteUser(id int64) *errors.RestErr {
+func (s *userService) DeleteUser(id int64) *rest_errors.RestErr {
 	var user users.User
 	user.Id = id
 	return user.Delete()
 }
-func SearchUsers(param string) ([]users.User, *errors.RestErr) {
+func (s *userService) SearchUsers(param string) (users.Users, *rest_errors.RestErr) {
 	u := &users.User{}
 	return u.FindUsersByStatus(param)
+}
+
+func (s *userService) Login(login users.UserLogin) (*users.User, *rest_errors.RestErr) {
+	u := &users.User{
+		Email:    login.Email,
+		Password: login.Password,
+	}
+	if err := u.FindByEmailAndPassword(); err != nil {
+		return nil, rest_errors.NewNotFoundError(err.Message)
+	}
+	return u, nil
+
 }

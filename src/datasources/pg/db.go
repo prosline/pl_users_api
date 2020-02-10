@@ -15,14 +15,14 @@ const (
 	pg_dsn_host          = "pg_dsn_host"
 	pg_dsn_schema        = "pg_dsn_schema"
 
-//DSN = "postgres://marciodasilva@127.0.0.1:5432/plapi?sslmode=disable"
-// pg_dsn="postgres://%s@%s:5432/%s?sslmode=disable"
-/*export pg_dsn="postgres://%s@%s:5432/%s?sslmode=disable"
-export pg_dsn_user_name="marciodasilva"
-export pg_dsn_user_password=""
-export pg_dsn_host="127.0.0.1"
-export pg_dsn_schema="plapi"
-*/
+	//DSN = "postgres://marciodasilva@127.0.0.1:5432/plapi?sslmode=disable"
+	// pg_dsn="postgres://%s@%s:5432/%s?sslmode=disable"
+	/*export pg_dsn="postgres://%s@%s:5432/%s?sslmode=disable"
+	  export pg_dsn_user_name="marciodasilva"
+	  export pg_dsn_user_password=""
+	  export pg_dsn_host="127.0.0.1"
+	  export pg_dsn_schema="plapi"
+	*/
 )
 
 var (
