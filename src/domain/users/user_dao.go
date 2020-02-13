@@ -31,7 +31,7 @@ var (
 	queryFindByEmailPassword = "SELECT id, first_name, last_name, email, date_created,password, status FROM users WHERE email=$1;"
 )
 
-func (user *User) Save() *rest_errors.RestErr {
+func (user *User) Save() rest_errors.RestErr {
 	var tx *sqlx.Tx
 	tx = pg.ClientDB.MustBegin()
 
@@ -68,7 +68,7 @@ func (user *User) Save() *rest_errors.RestErr {
 	return nil
 }
 
-func (user *User) Get() *rest_errors.RestErr {
+func (user *User) Get() rest_errors.RestErr {
 	if dberr := pg.ClientDB.Ping(); dberr != nil {
 		panic(dberr)
 	}
@@ -86,7 +86,7 @@ func (user *User) Get() *rest_errors.RestErr {
 	return nil
 }
 
-func (user *User) Update() *rest_errors.RestErr {
+func (user *User) Update() rest_errors.RestErr {
 	if dberr := pg.ClientDB.Ping(); dberr != nil {
 		panic(dberr)
 	}
@@ -104,7 +104,7 @@ func (user *User) Update() *rest_errors.RestErr {
 	return nil
 }
 
-func (user *User) Delete() *rest_errors.RestErr {
+func (user *User) Delete() rest_errors.RestErr {
 	if dberr := pg.ClientDB.Ping(); dberr != nil {
 		panic(dberr)
 	}
@@ -125,7 +125,7 @@ func (user *User) Delete() *rest_errors.RestErr {
 	return nil
 }
 
-func (user *User) FindUsersByStatus(status string) ([]User, *rest_errors.RestErr) {
+func (user *User) FindUsersByStatus(status string) ([]User, rest_errors.RestErr) {
 	if dberr := pg.ClientDB.Ping(); dberr != nil {
 		panic(dberr)
 	}
@@ -156,7 +156,7 @@ func (user *User) FindUsersByStatus(status string) ([]User, *rest_errors.RestErr
 	return result, nil
 
 }
-func (user *User) FindByEmailAndPassword() *rest_errors.RestErr {
+func (user *User) FindByEmailAndPassword() rest_errors.RestErr {
 	var txtPassword string
 	txtPassword = user.Password
 	if strings.TrimSpace(user.Email) == "" || strings.TrimSpace(user.Password) == "" {
@@ -171,7 +171,7 @@ func (user *User) FindByEmailAndPassword() *rest_errors.RestErr {
 	}
 	return nil
 }
-func (user *User) GetByEmail() *rest_errors.RestErr {
+func (user *User) GetByEmail() rest_errors.RestErr {
 	stmt, er := pg.ClientDB.Prepare(queryFindByEmailPassword)
 	if er != nil {
 		logger.Error("Error when try to 'FindUserByStatus' user statement", er)

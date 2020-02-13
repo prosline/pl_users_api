@@ -19,7 +19,7 @@ const (
 	UserNotAvailable = "Users not available"
 )
 
-func getUserId(param string) (int64, *rest_errors.RestErr) {
+func getUserId(param string) (int64, rest_errors.RestErr) {
 	userId, userErr := strconv.ParseInt(param, 10, 64)
 	if userErr != nil {
 		return 0, rest_errors.NewBadRequestError(InvalidUserId)
@@ -29,18 +29,18 @@ func getUserId(param string) (int64, *rest_errors.RestErr) {
 
 func Get(c *gin.Context) {
 	if err := oauth.AuthenticateRequest(c.Request); err != nil{
-		c.JSON(err.Status, err)
+		c.JSON(err.Status(), err)
 		return
 	}
 	userId, err := getUserId(c.Param("user_id"))
 	if err != nil {
-		c.JSON(err.Status, err)
+		c.JSON(err.Status(), err)
 		return
 	}
 	user, getUserErr := services.UserService.GetUser(userId)
 	if getUserErr != nil {
 		err := rest_errors.CreateUserError(UserNotCreated)
-		c.JSON(err.Status, getUserErr)
+		c.JSON(err.Status(), getUserErr)
 		return
 	}
 	if oauth.GetUserId(c.Request) == user.Id {
@@ -58,7 +58,7 @@ func Create(c *gin.Context) {
 	var user users.User
 	if err := c.ShouldBindJSON(&user); err != nil {
 		restErr := rest_errors.NewBadRequestError(InvalidJSONBody)
-		c.JSON(restErr.Status, restErr)
+		c.JSON(restErr.Status(), restErr)
 		return
 	}
 	u, errUser := services.UserService.CreateUser(user)
@@ -72,13 +72,13 @@ func Create(c *gin.Context) {
 func Update(c *gin.Context) {
 	userId, err := getUserId(c.Param("user_id"))
 	if err != nil {
-		c.JSON(err.Status, err)
+		c.JSON(err.Status(), err)
 		return
 	}
 	var user users.User
 	if err := c.ShouldBindJSON(&user); err != nil {
 		er := rest_errors.NewBadRequestError(InvalidJSONBody)
-		c.JSON(er.Status, er)
+		c.JSON(er.Status(), er)
 		return
 	}
 	user.Id = userId
@@ -86,7 +86,7 @@ func Update(c *gin.Context) {
 	u, updateErr := services.UserService.UpdateUser(isPartial, user)
 	if updateErr != nil {
 		er := rest_errors.NewBadRequestError(UserNotUpdated)
-		c.JSON(er.Status, er)
+		c.JSON(er.Status(), er)
 		return
 	}
 	c.JSON(http.StatusOK, u.Marshall(c.GetHeader("X-Public") == "true"))
@@ -95,13 +95,13 @@ func Update(c *gin.Context) {
 func Delete(c *gin.Context) {
 	userId, err := getUserId(c.Param("user_id"))
 	if err != nil {
-		c.JSON(err.Status, err)
+		c.JSON(err.Status(), err)
 		return
 	}
 	delErr := services.UserService.DeleteUser(userId)
 	if delErr != nil {
 		delErr := rest_errors.NewBadRequestError(UserNotDeleted)
-		c.JSON(delErr.Status, delErr)
+		c.JSON(delErr.Status(), delErr)
 		return
 	}
 	c.JSON(http.StatusOK, map[string]string{"status": "deleted"})
@@ -113,12 +113,12 @@ func Search(c *gin.Context) {
 
 	if param == "" {
 		paramErr := rest_errors.NewBadRequestError(UserNotDeleted)
-		c.JSON(paramErr.Status, paramErr)
+		c.JSON(paramErr.Status(), paramErr)
 	}
 	allUsers, srchErr := services.UserService.SearchUsers(param)
 	if srchErr != nil {
 		err := rest_errors.UserNotFound(UserNotAvailable)
-		c.JSON(err.Status, err)
+		c.JSON(err.Status(), err)
 	}
 	c.JSON(http.StatusOK, allUsers.Marshall(c.GetHeader("X-Public") == "true"))
 }

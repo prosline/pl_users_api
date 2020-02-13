@@ -14,15 +14,15 @@ type userService struct {
 }
 
 type userServiceInterface interface {
-	GetUser(int64) (*users.User, *rest_errors.RestErr)
-	CreateUser(user users.User) (*users.User, *rest_errors.RestErr)
-	UpdateUser(isPartial bool, user users.User) (*users.User, *rest_errors.RestErr)
-	DeleteUser(id int64) *rest_errors.RestErr
-	SearchUsers(string) (users.Users, *rest_errors.RestErr)
-	Login(users.UserLogin) (*users.User, *rest_errors.RestErr)
+	GetUser(int64) (*users.User, rest_errors.RestErr)
+	CreateUser(user users.User) (*users.User, rest_errors.RestErr)
+	UpdateUser(isPartial bool, user users.User) (*users.User, rest_errors.RestErr)
+	DeleteUser(id int64) rest_errors.RestErr
+	SearchUsers(string) (users.Users, rest_errors.RestErr)
+	Login(users.UserLogin) (*users.User, rest_errors.RestErr)
 }
 
-func (s *userService) GetUser(id int64) (*users.User, *rest_errors.RestErr) {
+func (s *userService) GetUser(id int64) (*users.User, rest_errors.RestErr) {
 	if id <= 0 {
 		return nil, rest_errors.UserNotFound("Invalid User Id!")
 	}
@@ -33,7 +33,7 @@ func (s *userService) GetUser(id int64) (*users.User, *rest_errors.RestErr) {
 
 	return &user, nil
 }
-func (s *userService) CreateUser(user users.User) (*users.User, *rest_errors.RestErr) {
+func (s *userService) CreateUser(user users.User) (*users.User, rest_errors.RestErr) {
 	if err := user.IsValid(); err != nil {
 		return nil, err
 	}
@@ -43,7 +43,7 @@ func (s *userService) CreateUser(user users.User) (*users.User, *rest_errors.Res
 	return &user, nil
 }
 
-func (s *userService) UpdateUser(isPartial bool, user users.User) (*users.User, *rest_errors.RestErr) {
+func (s *userService) UpdateUser(isPartial bool, user users.User) (*users.User, rest_errors.RestErr) {
 	u, err := s.GetUser(user.Id)
 	if err != nil {
 		return nil, rest_errors.UserNotFound("User Not Found!")
@@ -70,23 +70,23 @@ func (s *userService) UpdateUser(isPartial bool, user users.User) (*users.User, 
 	}
 	return u, nil
 }
-func (s *userService) DeleteUser(id int64) *rest_errors.RestErr {
+func (s *userService) DeleteUser(id int64) rest_errors.RestErr {
 	var user users.User
 	user.Id = id
 	return user.Delete()
 }
-func (s *userService) SearchUsers(param string) (users.Users, *rest_errors.RestErr) {
+func (s *userService) SearchUsers(param string) (users.Users, rest_errors.RestErr) {
 	u := &users.User{}
 	return u.FindUsersByStatus(param)
 }
 
-func (s *userService) Login(login users.UserLogin) (*users.User, *rest_errors.RestErr) {
+func (s *userService) Login(login users.UserLogin) (*users.User, rest_errors.RestErr) {
 	u := &users.User{
 		Email:    login.Email,
 		Password: login.Password,
 	}
 	if err := u.FindByEmailAndPassword(); err != nil {
-		return nil, rest_errors.NewNotFoundError(err.Message)
+		return nil, rest_errors.NewNotFoundError(err.Message())
 	}
 	return u, nil
 

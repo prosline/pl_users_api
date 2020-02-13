@@ -10,7 +10,7 @@ var (
 )
 
 func StartApplication() {
-	logger.Info("Starting Application....")
+	logger.Info("Starting Application on Port 8081....")
 	URLMapping()
-	router.Run(":8080")
+	router.Run(":8081")
 }

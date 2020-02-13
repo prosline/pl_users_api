@@ -41,7 +41,7 @@ type UserLogin struct {
 	Password string `json:"password"`
 }
 
-func (user *User) IsValid() *rest_errors.RestErr {
+func (user *User) IsValid() rest_errors.RestErr {
 	user.FirstName = strings.TrimSpace(user.FirstName)
 	user.LastName = strings.TrimSpace(user.LastName)
 
